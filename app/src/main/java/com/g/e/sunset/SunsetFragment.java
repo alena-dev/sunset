@@ -1,5 +1,6 @@
 package com.g.e.sunset;
 
+import android.animation.AnimatorSet;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.content.res.Resources;
@@ -11,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AnimationSet;
+
 
 public class SunsetFragment extends Fragment {
 
@@ -67,15 +70,17 @@ public class SunsetFragment extends Fragment {
                 .setDuration(3000);
         sunsetSkyAnimator.setEvaluator(new ArgbEvaluator());
 
-//        ObjectAnimator nightSkyAnimator = ObjectAnimator
-//                .ofInt(mSkyView, "backgroundColor",
-//                        mSunsetSkyColor, mNightsSkyColor)
-//                .setDuration(1500);
-//        nightSkyAnimator.setEvaluator(new ArgbEvaluator());
+        ObjectAnimator nightSkyAnimator = ObjectAnimator
+                .ofInt(mSkyView, "backgroundColor",
+                        mSunsetSkyColor, mNightsSkyColor)
+                .setDuration(1500);
+        nightSkyAnimator.setEvaluator(new ArgbEvaluator());
 
-
-
-        heightAnimator.start();
-        sunsetSkyAnimator.start();
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet
+                .play(heightAnimator)
+                .with(sunsetSkyAnimator)
+                .before(nightSkyAnimator);
+        animatorSet.start();
     }
 }
