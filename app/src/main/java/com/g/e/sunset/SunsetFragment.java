@@ -3,7 +3,9 @@ package com.g.e.sunset;
 import android.animation.AnimatorSet;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.res.Resources;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AnimationSet;
 
 
 public class SunsetFragment extends Fragment {
@@ -33,6 +34,9 @@ public class SunsetFragment extends Fragment {
     private float mSunNightPosition;
 
     private boolean mIsNight = false;
+    private int mCurrentSkyColor;
+    private AnimatorSet mSunriseAnimatorSet;
+    private AnimatorSet mSunsetanimatorSet;
 
     public static SunsetFragment createInstance(){
         return new SunsetFragment();
@@ -59,9 +63,11 @@ public class SunsetFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(!mIsNight) {
+                    if(mSunriseAnimatorSet!=null) mSunriseAnimatorSet.cancel();
                     startSunsetAnimation();
                     mIsNight = true;
                 } else {
+                    if(mSunsetanimatorSet!= null) mSunsetanimatorSet.cancel();
                     startSunriseAnimation();
                     mIsNight = false;
                 }
@@ -73,6 +79,10 @@ public class SunsetFragment extends Fragment {
 
 
     private void startSunsetAnimation(){
+        if(mCurrentSkyColor==0) {
+            mCurrentSkyColor = getCurrentSkyColor();
+            Log.i(TAG, "current sky color " + mCurrentSkyColor + " DaySkyColor " + mDaySkyColor);
+        }
 
         if(mSunDayPosition==0) {
             mSunDayPosition = mSunView.getTop();
@@ -84,54 +94,62 @@ public class SunsetFragment extends Fragment {
             Log.i(TAG, "start sunset endPosition" + mSunNightPosition);
         }
 
-        ObjectAnimator heightAnimator = ObjectAnimator
-                .ofFloat(mSunView, "y", mSunDayPosition, mSunNightPosition)
-                .setDuration(3000);
-        heightAnimator.setInterpolator(new AccelerateInterpolator());
+        ObjectAnimator heightAnimator = getSunHeightAnimator(mSunNightPosition, 3000);
+        ObjectAnimator sunsetSkyAnimator = getSkyColorAnimator(mCurrentSkyColor, mSunsetSkyColor, 3000);
+        ObjectAnimator nightSkyAnimator = getSkyColorAnimator(mSunsetSkyColor, mNightsSkyColor, 1500);
 
-        ObjectAnimator sunsetSkyAnimator = ObjectAnimator
-                .ofInt(mSkyView, "backgroundColor",
-                        mDaySkyColor, mSunsetSkyColor)
-                .setDuration(3000);
-        sunsetSkyAnimator.setEvaluator(new ArgbEvaluator());
-
-        ObjectAnimator nightSkyAnimator = ObjectAnimator
-                .ofInt(mSkyView, "backgroundColor",
-                        mSunsetSkyColor, mNightsSkyColor)
-                .setDuration(1500);
-        nightSkyAnimator.setEvaluator(new ArgbEvaluator());
-
-        AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet
+        mSunsetanimatorSet = new AnimatorSet();
+        mSunsetanimatorSet
                 .play(heightAnimator)
                 .with(sunsetSkyAnimator)
                 .before(nightSkyAnimator);
-        animatorSet.start();
+        mSunsetanimatorSet.start();
+    }
+
+    @NonNull
+    private ObjectAnimator getSunHeightAnimator(float finishSunPosition, int duration) {
+        ObjectAnimator heightAnimator = ObjectAnimator
+                .ofFloat(mSunView, "y", finishSunPosition)
+                .setDuration(duration);
+        heightAnimator.setInterpolator(new AccelerateInterpolator());
+
+        return heightAnimator;
+    }
+
+    private int getCurrentSkyColor() {
+        ColorDrawable currentSkyColor = (ColorDrawable) mSkyView.getBackground();
+        return currentSkyColor.getColor();
     }
 
     private void startSunriseAnimation() {
-       ObjectAnimator heightAnimator = ObjectAnimator
-                .ofFloat(mSunView, "y", mSunDayPosition)
-                .setDuration(3000);
-        heightAnimator.setInterpolator(new AccelerateInterpolator());
 
-        ObjectAnimator sunriseSkyAnimator = ObjectAnimator
-                .ofInt(mSkyView, "backgroundColor",
-                        mNightsSkyColor, mSunriseSkyColor)
-                .setDuration(3000);
-        sunriseSkyAnimator.setEvaluator(new ArgbEvaluator());
+        ObjectAnimator heightAnimator = getSunHeightAnimator(mSunDayPosition, 3000);
+        ObjectAnimator sunriseSkyAnimator = getSkyColorAnimator(mCurrentSkyColor, mSunriseSkyColor, 3000);
+        ObjectAnimator daySkyAnimator = getSkyColorAnimator(mSunriseSkyColor, mDaySkyColor, 1500);
 
-        ObjectAnimator daySkyAnimator = ObjectAnimator
-                .ofInt(mSkyView, "backgroundColor",
-                        mSunriseSkyColor, mDaySkyColor)
-                .setDuration(1500);
-        daySkyAnimator.setEvaluator(new ArgbEvaluator());
-
-        AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet
+       mSunriseAnimatorSet = new AnimatorSet();
+        mSunriseAnimatorSet
                 .play(heightAnimator)
                 .with(sunriseSkyAnimator)
                 .before(daySkyAnimator);
-        animatorSet.start();
+        mSunriseAnimatorSet.start();
+    }
+
+    private ObjectAnimator getSkyColorAnimator (int startSkyColour, final int finishSkyColor, int duration){
+        ObjectAnimator skyColorAnimator = ObjectAnimator
+                .ofInt(mSkyView, "backgroundColor",
+                        startSkyColour, finishSkyColor)
+                .setDuration(duration);
+        Log.i(TAG, "current sky color " + mCurrentSkyColor);
+        skyColorAnimator.setEvaluator(new ArgbEvaluator());
+        skyColorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mCurrentSkyColor = (int)animation.getAnimatedValue();
+                Log.i(TAG, "current sky color " + mCurrentSkyColor + " finishSkyColor " + finishSkyColor);
+            }
+        });
+
+        return skyColorAnimator;
     }
 }
