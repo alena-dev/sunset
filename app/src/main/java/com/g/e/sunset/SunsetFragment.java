@@ -24,19 +24,25 @@ public class SunsetFragment extends Fragment {
     private View mSceneView;
     private View mSunView;
     private View mSkyView;
+    private View mSunReflectionView;
+    private View mSeaView;
 
     private int mDaySkyColor;
     private int mSunsetSkyColor;
     private int mNightsSkyColor;
     private int mSunriseSkyColor;
+    private int mCurrentSkyColor;
 
     private float mSunDayPosition;
     private float mSunNightPosition;
 
-    private boolean mIsNight = false;
-    private int mCurrentSkyColor;
     private AnimatorSet mSunriseAnimatorSet;
     private AnimatorSet mSunsetanimatorSet;
+
+    private boolean mIsNight = false;
+
+    private float mSunReflectionDayPosition;
+    private float mSunReflectionNightPosition;
 
     public static SunsetFragment createInstance(){
         return new SunsetFragment();
@@ -51,6 +57,8 @@ public class SunsetFragment extends Fragment {
         mSceneView = view;
         mSunView = view.findViewById(R.id.sun);
         mSkyView = view.findViewById(R.id.sky);
+        mSunReflectionView = view.findViewById(R.id.sun_reflection);
+        mSeaView = view.findViewById(R.id.sea);
 
         Resources resources = getResources();
         mDaySkyColor = resources.getColor(R.color.blue_sky);
@@ -86,30 +94,36 @@ public class SunsetFragment extends Fragment {
 
         if(mSunDayPosition==0) {
             mSunDayPosition = mSunView.getTop();
-            Log.i(TAG, "start sunset startPosition" + mSunDayPosition);
+            mSunReflectionDayPosition = mSunReflectionView.getTop();
+            Log.i(TAG, "start sunset startPosition" + mSunDayPosition + " reflectionPosition " + mSunReflectionDayPosition);
         }
 
         if(mSunNightPosition==0) {
             mSunNightPosition = mSkyView.getHeight();
-            Log.i(TAG, "start sunset endPosition" + mSunNightPosition);
+            mSunReflectionNightPosition = mSeaView.getTop()- mSunReflectionView.getHeight();
+            Log.i(TAG, "start sunset endPosition" + mSunNightPosition + " reflectionPosition " + mSunReflectionNightPosition);
         }
 
-        ObjectAnimator heightAnimator = getSunHeightAnimator(mSunNightPosition, 3000);
-        ObjectAnimator sunsetSkyAnimator = getSkyColorAnimator(mCurrentSkyColor, mSunsetSkyColor, 3000);
-        ObjectAnimator nightSkyAnimator = getSkyColorAnimator(mSunsetSkyColor, mNightsSkyColor, 1500);
+        int durationSunset = 3000;
+        ObjectAnimator sunHeightAnimator = getObjectHeightAnimator(mSunView, mSunNightPosition, durationSunset);
+        ObjectAnimator sunsetSkyAnimator = getSkyColorAnimator(mCurrentSkyColor, mSunsetSkyColor, durationSunset);
+        ObjectAnimator sunReflectionHeightAnimator = getObjectHeightAnimator (mSunReflectionView, mSunReflectionNightPosition, durationSunset);
+        ObjectAnimator nightSkyAnimator = getSkyColorAnimator(mSunsetSkyColor, mNightsSkyColor, durationSunset/2);
+
 
         mSunsetanimatorSet = new AnimatorSet();
         mSunsetanimatorSet
-                .play(heightAnimator)
+                .play(sunHeightAnimator)
                 .with(sunsetSkyAnimator)
+                .with(sunReflectionHeightAnimator)
                 .before(nightSkyAnimator);
         mSunsetanimatorSet.start();
     }
 
     @NonNull
-    private ObjectAnimator getSunHeightAnimator(float finishSunPosition, int duration) {
+    private ObjectAnimator getObjectHeightAnimator(View object, float finishSunPosition, int duration) {
         ObjectAnimator heightAnimator = ObjectAnimator
-                .ofFloat(mSunView, "y", finishSunPosition)
+                .ofFloat(object, "y", finishSunPosition)
                 .setDuration(duration);
         heightAnimator.setInterpolator(new AccelerateInterpolator());
 
@@ -123,14 +137,17 @@ public class SunsetFragment extends Fragment {
 
     private void startSunriseAnimation() {
 
-        ObjectAnimator heightAnimator = getSunHeightAnimator(mSunDayPosition, 3000);
-        ObjectAnimator sunriseSkyAnimator = getSkyColorAnimator(mCurrentSkyColor, mSunriseSkyColor, 3000);
-        ObjectAnimator daySkyAnimator = getSkyColorAnimator(mSunriseSkyColor, mDaySkyColor, 1500);
+        int durationSunrise = 3000;
+        ObjectAnimator sunHeightAnimator = getObjectHeightAnimator(mSunView, mSunDayPosition, durationSunrise);
+        ObjectAnimator sunriseSkyAnimator = getSkyColorAnimator(mCurrentSkyColor, mSunriseSkyColor, durationSunrise);
+        ObjectAnimator sunReflectionHeightAnimator = getObjectHeightAnimator (mSunReflectionView, mSunReflectionDayPosition, durationSunrise);
+        ObjectAnimator daySkyAnimator = getSkyColorAnimator(mSunriseSkyColor, mDaySkyColor, durationSunrise/2);
 
        mSunriseAnimatorSet = new AnimatorSet();
         mSunriseAnimatorSet
-                .play(heightAnimator)
+                .play(sunHeightAnimator)
                 .with(sunriseSkyAnimator)
+                .with(sunReflectionHeightAnimator)
                 .before(daySkyAnimator);
         mSunriseAnimatorSet.start();
     }
