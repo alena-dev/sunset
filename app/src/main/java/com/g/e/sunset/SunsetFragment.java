@@ -1,5 +1,6 @@
 package com.g.e.sunset;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
@@ -26,6 +27,7 @@ public class SunsetFragment extends Fragment {
     private View mSkyView;
     private View mSunReflectionView;
     private View mSeaView;
+    private View mSunshine;
 
     private int mDaySkyColor;
     private int mSunsetSkyColor;
@@ -44,6 +46,7 @@ public class SunsetFragment extends Fragment {
     private float mSunReflectionDayPosition;
     private float mSunReflectionNightPosition;
 
+
     public static SunsetFragment createInstance(){
         return new SunsetFragment();
     }
@@ -59,6 +62,7 @@ public class SunsetFragment extends Fragment {
         mSkyView = view.findViewById(R.id.sky);
         mSunReflectionView = view.findViewById(R.id.sun_reflection);
         mSeaView = view.findViewById(R.id.sea);
+        mSunshine = view.findViewById(R.id.sunshine);
 
         Resources resources = getResources();
         mDaySkyColor = resources.getColor(R.color.blue_sky);
@@ -70,6 +74,7 @@ public class SunsetFragment extends Fragment {
         mSceneView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                startSunshineAnimation();
                 if(!mIsNight) {
                     if(mSunriseAnimatorSet!=null) mSunriseAnimatorSet.cancel();
                     startSunsetAnimation();
@@ -168,5 +173,33 @@ public class SunsetFragment extends Fragment {
         });
 
         return skyColorAnimator;
+    }
+
+    private void startSunshineAnimation() {
+        int durationSunshine = 1000;
+        int scale = 2;
+        ObjectAnimator sunshineSizeYIncreaseAnimator = ObjectAnimator
+                .ofFloat(mSunshine, "scaleY", scale)
+                .setDuration(durationSunshine);
+        ObjectAnimator sunshineSizeXIncreaseAnimator = ObjectAnimator
+                .ofFloat(mSunshine, "scaleX", scale)
+                .setDuration(durationSunshine);
+        ObjectAnimator sunshineSizeYReduceAnimator = ObjectAnimator
+                .ofFloat(mSunshine, "scaleY", 1 / scale)
+                .setDuration(durationSunshine);
+        ObjectAnimator sunshineSizeXReduceAnimator = ObjectAnimator
+                .ofFloat(mSunshine, "scaleX", 1 / scale)
+                .setDuration(durationSunshine);
+
+        AnimatorSet sunshineAnimatorSet = new AnimatorSet();
+        sunshineAnimatorSet
+                .play(sunshineSizeYIncreaseAnimator)
+                .with(sunshineSizeXIncreaseAnimator)
+                .before(sunshineSizeYReduceAnimator);
+        sunshineAnimatorSet
+                .play(sunshineSizeYReduceAnimator)
+                .with(sunshineSizeXReduceAnimator);
+
+        sunshineAnimatorSet.start();
     }
 }

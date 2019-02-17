@@ -10,14 +10,29 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.5"
-        android:background="@color/blue_sky" >
+        android:background="@color/blue_sky">
 
-        <ImageView
+        <FrameLayout
             android:id="@+id/sun"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:src="@drawable/sun"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/sun_circle"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/sun"
+                android:layout_gravity="center"/>
+
+            <ImageView
+                android:id="@+id/sunshine"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/sunshine"
+                android:layout_gravity="center"/>
+            <!--android:visibility="invisible"-->
+        </FrameLayout>
+
     </FrameLayout>
 
     <FrameLayout
@@ -36,6 +51,6 @@
             android:id="@+id/sea"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#80224869"/>
+            android:background="@color/light_sea"/>
     </FrameLayout>
 </LinearLayout>
