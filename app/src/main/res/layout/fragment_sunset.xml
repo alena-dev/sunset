@@ -10,27 +10,29 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.5"
-        android:background="@color/blue_sky">
+        android:background="@color/blue_sky"
+        android:clipChildren="false">
 
         <FrameLayout
             android:id="@+id/sun"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ImageView
-                android:id="@+id/sun_circle"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/sun"
-                android:layout_gravity="center"/>
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:clipChildren="false">
 
             <ImageView
                 android:id="@+id/sunshine"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:src="@drawable/sunshine"
-                android:layout_gravity="center"/>
-            <!--android:visibility="invisible"-->
+                android:layout_gravity="center"
+                android:src="@drawable/sunshine" />
+
+            <ImageView
+                android:id="@+id/sun_circle"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:src="@drawable/sun" />
         </FrameLayout>
 
     </FrameLayout>
