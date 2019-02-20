@@ -44,11 +44,11 @@ public class SunsetFragment extends Fragment {
     private AnimatorSet mSunshineAnimatorSet;
 
     private boolean mIsNight = false;
-    private boolean mIsSunshineCanseled;
+    private boolean mIsSunshineCanceled;
 
     private float mSunReflectionDayPosition;
     private float mSunReflectionNightPosition;
-
+    private boolean mSunshineStopRequested = false;
 
     public static SunsetFragment createInstance(){
         return new SunsetFragment();
@@ -115,6 +115,15 @@ public class SunsetFragment extends Fragment {
 
         int durationSunset = 3000;
         ObjectAnimator sunHeightAnimator = getObjectHeightAnimator(mSunView, mSunNightPosition, durationSunset);
+        sunHeightAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mSunshineStopRequested = true;
+//                mSunshineAnimatorSet.cancel();
+
+            }
+        });
+
         ObjectAnimator sunsetSkyAnimator = getSkyColorAnimator(mCurrentSkyColor, mSunsetSkyColor, durationSunset);
         ObjectAnimator sunReflectionHeightAnimator = getObjectHeightAnimator (mSunReflectionView, mSunReflectionNightPosition, durationSunset);
         ObjectAnimator nightSkyAnimator = getSkyColorAnimator(mSunsetSkyColor, mNightsSkyColor, durationSunset/2);
@@ -147,6 +156,7 @@ public class SunsetFragment extends Fragment {
 
         int durationSunrise = 3000;
         ObjectAnimator sunHeightAnimator = getObjectHeightAnimator(mSunView, mSunDayPosition, durationSunrise);
+
         ObjectAnimator sunriseSkyAnimator = getSkyColorAnimator(mCurrentSkyColor, mSunriseSkyColor, durationSunrise);
         ObjectAnimator sunReflectionHeightAnimator = getObjectHeightAnimator (mSunReflectionView, mSunReflectionDayPosition, durationSunrise);
         ObjectAnimator daySkyAnimator = getSkyColorAnimator(mSunriseSkyColor, mDaySkyColor, durationSunrise/2);
@@ -158,6 +168,9 @@ public class SunsetFragment extends Fragment {
                 .with(sunReflectionHeightAnimator)
                 .before(daySkyAnimator);
         mSunriseAnimatorSet.start();
+
+        mSunshineStopRequested = false;
+        mSunshineAnimatorSet.start();
     }
 
     private ObjectAnimator getSkyColorAnimator (int startSkyColour, final int finishSkyColor, int duration){
@@ -191,17 +204,17 @@ public class SunsetFragment extends Fragment {
 
             @Override
             public void onAnimationStart(Animator animation) {
-                mIsSunshineCanseled = false;
+                mIsSunshineCanceled = false;
             }
 
             @Override
             public void onAnimationCancel(Animator animation) {
-                mIsSunshineCanseled = true;
+                mIsSunshineCanceled = true;
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if(!mIsSunshineCanseled) animation.start();
+                if(!mIsSunshineCanceled && !mSunshineStopRequested) animation.start();
             }
         });
 
